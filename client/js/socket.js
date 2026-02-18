@@ -7,6 +7,7 @@ const PokerSocket = {
     onError: null,
     onConnect: null,
     onDisconnect: null,
+    onChatMessage: null,
 
     connect(name) {
         this.playerName = name;
@@ -43,6 +44,10 @@ const PokerSocket = {
         this.socket.on('connect_error', (err) => {
             console.error('Connection error:', err.message);
         });
+
+        this.socket.on('chatMessage', (msg) => {
+            if (this.onChatMessage) this.onChatMessage(msg);
+        });
     },
 
     sendAction(type, amount) {
@@ -54,6 +59,12 @@ const PokerSocket = {
     sendRebuy() {
         if (this.socket && this.socket.connected) {
             this.socket.emit('rebuy');
+        }
+    },
+
+    sendChat(message) {
+        if (this.socket && this.socket.connected && message.trim()) {
+            this.socket.emit('chat', { message: message.trim() });
         }
     },
 

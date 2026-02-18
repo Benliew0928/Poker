@@ -38,6 +38,17 @@ io.on('connection', (socket) => {
         gameRoom.handleRebuy(socket.id);
     });
 
+    socket.on('chat', ({ message }) => {
+        if (!message || message.trim().length === 0) return;
+        const name = gameRoom.getPlayerName(socket.id);
+        if (!name) return;
+        io.emit('chatMessage', {
+            name,
+            message: message.trim().substring(0, 200),
+            time: Date.now()
+        });
+    });
+
     socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);
         gameRoom.removePlayer(socket.id);

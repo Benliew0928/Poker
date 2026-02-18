@@ -9,6 +9,22 @@ class GameRoom {
         this.playerNames = new Map(); // name -> id (for reconnection)
     }
 
+    getPlayerName(socketId) {
+        // Check active players
+        const player = this.engine.players.find(p => p.id === socketId);
+        if (player) return player.name;
+        // Check pending
+        const pending = this.engine.pendingPlayers.find(p => p.id === socketId);
+        if (pending) return pending.name;
+        // Check busted
+        const busted = this.engine.bustedPlayers.find(p => p.id === socketId);
+        if (busted) return busted.name;
+        // Check spectators
+        const spec = this.spectatorSockets.get(socketId);
+        if (spec) return spec.name;
+        return null;
+    }
+
     addPlayer(socketId, name, socket) {
         this.sockets.set(socketId, socket);
 
