@@ -89,14 +89,19 @@
         const div = document.createElement('div');
         div.className = 'chat-msg';
 
+        const time = new Date(msg.time);
+        const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
         if (msg.system) {
             div.classList.add('system');
-            div.innerHTML = `<span class="chat-name">⚡</span><span class="chat-text">${escapeHtml(msg.message)}</span>`;
+            div.innerHTML = `<span class="chat-text"><span class="chat-name">${escapeHtml(msg.name)}</span> ${escapeHtml(msg.message)}</span>`;
         } else {
-            const time = new Date(msg.time);
-            const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            div.innerHTML = `<span class="chat-name">${escapeHtml(msg.name)}</span><span class="chat-text">${escapeHtml(msg.message)}</span>`;
-            div.title = timeStr;
+            div.innerHTML =
+                `<div class="msg-header">` +
+                `<span class="chat-name">${escapeHtml(msg.name)}</span>` +
+                `<span class="chat-time">${timeStr}</span>` +
+                `</div>` +
+                `<div class="chat-text">${escapeHtml(msg.message)}</div>`;
         }
 
         chatMessages.appendChild(div);

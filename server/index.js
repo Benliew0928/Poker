@@ -27,7 +27,16 @@ io.on('connection', (socket) => {
             socket.emit('error', { message: 'Name is required' });
             return;
         }
-        gameRoom.addPlayer(socket.id, name.trim(), socket);
+        const trimmed = name.trim();
+        gameRoom.addPlayer(socket.id, trimmed, socket);
+
+        // System chat message
+        io.emit('chatMessage', {
+            name: trimmed,
+            message: 'joined the table',
+            time: Date.now(),
+            system: true
+        });
     });
 
     socket.on('action', ({ type, amount }) => {
@@ -38,10 +47,22 @@ io.on('connection', (socket) => {
         gameRoom.handleRebuy(socket.id);
     });
 
-    socket.on('chat', ({ message }) => {
+    socket.on('chat', (data) => {
+        const message = data && data.message;
         if (!message || message.trim().length === 0) return;
-        const name = gameRoom.getPlayerName(socket.id);
-        if (!name) return;
+        // Try multiple ways to find the player name
+        let name = gameRoom.getPlayerName(socket.id);
+        if (!name) {
+            // Fallback: reverse lookup from playerNames map
+            for (const [pName, pId] of gameRoom.playerNames) {
+                if (pId === socket.id) { name = pName; break; }
+            }
+        }
+        if (!name) {
+            console.log(`Chat from unknown socket ${socket.id}`);
+            return;
+        }
+        console.log(`Chat: ${name}: ${message.trim()}`);
         io.emit('chatMessage', {
             name,
             message: message.trim().substring(0, 200),
@@ -50,8 +71,17 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
+        const name = gameRoom.getPlayerName(socket.id);
         console.log(`Socket disconnected: ${socket.id}`);
         gameRoom.removePlayer(socket.id);
+        if (name) {
+            io.emit('chatMessage', {
+                name,
+                message: 'left the table',
+                time: Date.now(),
+                system: true
+            });
+        }
     });
 });
 
