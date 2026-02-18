@@ -1,0 +1,405 @@
+/* === POKER TABLE === */
+#game-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 45%, #0f2318 0%, var(--bg-primary) 65%);
+    position: relative;
+}
+
+#table-container {
+    position: relative;
+    width: 90vw;
+    max-width: 900px;
+    height: 55vh;
+    max-height: 500px;
+}
+
+#poker-table {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%;
+    height: 70%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, #1e6b3f 0%, #155c32 40%, #0f4425 80%);
+    border: 4px solid var(--felt-border);
+    box-shadow:
+        0 0 0 8px rgba(15, 68, 37, 0.6),
+        0 0 40px rgba(0, 0, 0, 0.6),
+        inset 0 0 60px rgba(0, 0, 0, 0.3);
+}
+
+#table-felt {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    position: relative;
+}
+
+/* === COMMUNITY CARDS === */
+#community-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#community-cards {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    min-height: 72px;
+}
+
+#pot-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 5px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+}
+
+.pot-label {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+#pot-amount {
+    color: var(--accent-gold);
+    font-weight: 700;
+}
+
+/* === PLAYER SEATS === */
+#seats-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.player-seat {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    z-index: 10;
+}
+
+.seat-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 90px;
+}
+
+.seat-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-secondary);
+    position: relative;
+    transition: all var(--transition);
+}
+
+.seat-avatar.active {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.4), 0 0 32px rgba(16, 185, 129, 0.15);
+}
+
+.seat-avatar.folded {
+    opacity: 0.4;
+}
+
+.seat-avatar.disconnected {
+    border-color: var(--accent-red);
+    opacity: 0.5;
+}
+
+.seat-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.seat-chips {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-gold);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.seat-chips.zero {
+    color: var(--accent-red);
+}
+
+/* Hole cards next to avatar */
+.seat-cards {
+    display: flex;
+    gap: 3px;
+}
+
+/* Top row: cards + bet side by side */
+.seat-top-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+}
+
+/* Inline bet display (beside cards) */
+.seat-bet-inline {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-gold);
+    background: rgba(0, 0, 0, 0.6);
+    padding: 2px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+    min-height: 18px;
+}
+
+/* Rebuy panel */
+#rebuy-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background: rgba(15, 15, 25, 0.95);
+    border: 1px solid var(--accent-gold);
+    border-radius: 16px;
+    padding: 30px 40px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+}
+
+.rebuy-message {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+#rebuy-btn {
+    font-size: 16px;
+    padding: 12px 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent-green), #059669);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+
+#rebuy-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Action label */
+.seat-action {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    position: absolute;
+    bottom: -18px;
+}
+
+.seat-action.fold {
+    color: var(--accent-red);
+}
+
+.seat-action.check {
+    color: var(--accent-green);
+}
+
+.seat-action.call {
+    color: var(--accent-blue);
+}
+
+.seat-action.raise {
+    color: var(--accent-amber);
+}
+
+.seat-action.all-in {
+    color: var(--accent-red);
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* Dealer button */
+.dealer-btn {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff, #ccc);
+    color: #000;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--accent-gold);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Blind indicators */
+.blind-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.blind-badge.sb {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.blind-badge.bb {
+    background: var(--accent-amber);
+    color: #000;
+}
+
+/* === CARDS === */
+.card {
+    width: 44px;
+    height: 62px;
+    border-radius: 5px;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.card-front {
+    background: linear-gradient(145deg, #fff, #f0f0f0);
+    border: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3px 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.card-back {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 50%, #1e3a5f 100%);
+    border: 1px solid #2d5a8a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.card-back::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    background: repeating-linear-gradient(45deg, transparent, transparent 3px,
+            rgba(255, 255, 255, 0.03) 3px, rgba(255, 255, 255, 0.03) 6px);
+}
+
+.card-rank {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.card-suit {
+    font-size: 18px;
+    line-height: 1;
+    text-align: center;
+}
+
+.card-rank-bottom {
+    font-size: 13px;
+    font-weight: 800;
+    align-self: flex-end;
+    transform: rotate(180deg);
+    line-height: 1;
+}
+
+.card.red .card-rank,
+.card.red .card-suit,
+.card.red .card-rank-bottom {
+    color: var(--suit-red);
+}
+
+.card.black .card-rank,
+.card.black .card-suit,
+.card.black .card-rank-bottom {
+    color: #1a1a2e;
+}
+
+/* Community cards are slightly larger */
+#community-cards .card {
+    width: 54px;
+    height: 76px;
+}
+
+#community-cards .card .card-rank {
+    font-size: 15px;
+}
+
+#community-cards .card .card-suit {
+    font-size: 22px;
+}
+
+#community-cards .card .card-rank-bottom {
+    font-size: 15px;
+}
+
+/* My cards (current player) are larger */
+.my-cards .card {
+    width: 52px;
+    height: 72px;
+    cursor: default;
+}
+
+.my-cards .card .card-rank {
+    font-size: 14px;
+}
+
+.my-cards .card .card-suit {
+    font-size: 20px;
+}
+
+.my-cards .card .card-rank-bottom {
+    font-size: 14px;
+}

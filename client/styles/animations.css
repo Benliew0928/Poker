@@ -1,0 +1,198 @@
+/* Card deal animation */
+@keyframes dealCard {
+    from {
+        transform: translate(0, -200px) scale(0.3) rotate(-20deg);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(0, 0) scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+
+.card-deal {
+    animation: dealCard 0.4s ease-out forwards;
+}
+
+/* Community card reveal */
+@keyframes revealCard {
+    0% {
+        transform: rotateY(90deg) scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: rotateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.card-reveal {
+    animation: revealCard 0.4s ease-out forwards;
+}
+
+#community-cards .card:nth-child(1) {
+    animation-delay: 0s;
+}
+
+#community-cards .card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+#community-cards .card:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+#community-cards .card:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+#community-cards .card:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+/* Chip to pot */
+@keyframes chipToPot {
+    from {
+        transform: translate(var(--from-x, 0), var(--from-y, 0));
+        opacity: 0.5;
+    }
+
+    to {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+}
+
+.chip-animate {
+    animation: chipToPot 0.5s ease-out;
+}
+
+/* Active player pulse */
+@keyframes activePulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 24px rgba(16, 185, 129, 0.6), 0 0 48px rgba(16, 185, 129, 0.2);
+    }
+}
+
+.seat-avatar.active {
+    animation: activePulse 2s ease-in-out infinite;
+}
+
+/* Winner celebration */
+@keyframes winnerGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 16px rgba(251, 191, 36, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 32px rgba(251, 191, 36, 0.8), 0 0 64px rgba(251, 191, 36, 0.3);
+    }
+}
+
+.seat-avatar.winner {
+    border-color: var(--accent-gold);
+    animation: winnerGlow 1s ease-in-out infinite;
+}
+
+/* Fade in scale for overlays */
+@keyframes fadeInScale {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Fade out */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Action label pop */
+@keyframes actionPop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.seat-action {
+    animation: actionPop 0.3s ease-out;
+}
+
+/* Slide up for action panel */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+#action-panel:not(.hidden) {
+    animation: slideUp 0.3s ease-out;
+}
+
+/* Timer countdown warning */
+@keyframes timerWarning {
+
+    0%,
+    100% {
+        background: linear-gradient(90deg, var(--accent-red), var(--accent-amber));
+    }
+
+    50% {
+        background: var(--accent-red);
+    }
+}
+
+#timer-fill.warning {
+    animation: timerWarning 0.5s ease-in-out infinite;
+}
+
+/* Hover effects on cards */
+.my-cards .card:hover {
+    transform: translateY(-4px);
+}
+
+/* Button press effect */
+#action-buttons button:active {
+    transform: scale(0.95);
+}
