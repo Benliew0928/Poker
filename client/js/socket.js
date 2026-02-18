@@ -12,7 +12,7 @@ const PokerSocket = {
         this.playerName = name;
 
         // Auto-detect: same origin for dev, or set POKER_SERVER_URL for production
-        const url = window.POKER_SERVER_URL || '';
+        const url = window.POKER_SERVER_URL || 'https://poker-biax.onrender.com/';
         this.socket = io(url, {
             reconnection: true,
             reconnectionDelay: 1000,
