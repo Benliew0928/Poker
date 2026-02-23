@@ -9,10 +9,10 @@
 
 #table-container {
     position: relative;
-    width: 90vw;
+    width: 92vw;
     max-width: 900px;
-    height: 55vh;
-    max-height: 500px;
+    height: 60vh;
+    max-height: 520px;
 }
 
 #poker-table {
@@ -20,13 +20,13 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 75%;
-    height: 70%;
+    width: 70%;
+    height: 60%;
     border-radius: 50%;
     background: radial-gradient(ellipse, #1e6b3f 0%, #155c32 40%, #0f4425 80%);
-    border: 4px solid var(--felt-border);
+    border: 3px solid var(--felt-border);
     box-shadow:
-        0 0 0 8px rgba(15, 68, 37, 0.6),
+        0 0 0 6px rgba(15, 68, 37, 0.6),
         0 0 40px rgba(0, 0, 0, 0.6),
         inset 0 0 60px rgba(0, 0, 0, 0.3);
 }
@@ -46,30 +46,30 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
 }
 
 #community-cards {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     justify-content: center;
-    min-height: 72px;
+    min-height: 56px;
 }
 
 #pot-display {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     background: rgba(0, 0, 0, 0.4);
-    padding: 5px 14px;
-    border-radius: 16px;
-    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
 }
 
 .pot-label {
     color: var(--text-muted);
     font-weight: 500;
-    font-size: 11px;
+    font-size: 10px;
     text-transform: uppercase;
 }
 
@@ -95,17 +95,30 @@
     z-index: 10;
 }
 
+/* Z-index layering: bottom players behind, top in front */
+.player-seat.seat-top {
+    z-index: 12;
+}
+
+.player-seat.seat-side {
+    z-index: 11;
+}
+
+.player-seat.seat-bottom {
+    z-index: 14;
+}
+
 .seat-inner {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    min-width: 90px;
+    gap: 2px;
+    min-width: 70px;
 }
 
 .seat-avatar {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 2px solid var(--border);
     background: var(--bg-tertiary);
@@ -113,15 +126,16 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 14px;
     color: var(--text-secondary);
     position: relative;
     transition: all var(--transition);
+    flex-shrink: 0;
 }
 
 .seat-avatar.active {
     border-color: var(--accent-green);
-    box-shadow: 0 0 16px rgba(16, 185, 129, 0.4), 0 0 32px rgba(16, 185, 129, 0.15);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4), 0 0 24px rgba(16, 185, 129, 0.15);
 }
 
 .seat-avatar.folded {
@@ -134,53 +148,55 @@
 }
 
 .seat-name {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--text-primary);
-    max-width: 90px;
+    max-width: 70px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     text-align: center;
+    line-height: 1.2;
 }
 
 .seat-chips {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 600;
     color: var(--accent-gold);
     background: rgba(0, 0, 0, 0.5);
-    padding: 2px 8px;
-    border-radius: 8px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    line-height: 1.3;
 }
 
 .seat-chips.zero {
     color: var(--accent-red);
 }
 
-/* Hole cards next to avatar */
+/* Hole cards */
 .seat-cards {
     display: flex;
-    gap: 3px;
+    gap: 2px;
 }
 
 /* Top row: cards + bet side by side */
 .seat-top-row {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     justify-content: center;
 }
 
 /* Inline bet display (beside cards) */
 .seat-bet-inline {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 700;
     color: var(--accent-gold);
     background: rgba(0, 0, 0, 0.6);
-    padding: 2px 8px;
-    border-radius: 8px;
+    padding: 1px 5px;
+    border-radius: 6px;
     white-space: nowrap;
-    min-height: 18px;
+    min-height: 14px;
 }
 
 /* Rebuy panel */
@@ -193,22 +209,22 @@
     background: rgba(15, 15, 25, 0.95);
     border: 1px solid var(--accent-gold);
     border-radius: 16px;
-    padding: 30px 40px;
+    padding: 24px 32px;
     text-align: center;
     backdrop-filter: blur(10px);
-    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
 }
 
 .rebuy-message {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 #rebuy-btn {
-    font-size: 16px;
-    padding: 12px 32px;
+    font-size: 14px;
+    padding: 10px 24px;
     border-radius: 10px;
     background: linear-gradient(135deg, var(--accent-green), #059669);
     color: white;
@@ -225,14 +241,15 @@
 
 /* Action label */
 .seat-action {
-    font-size: 10px;
+    font-size: 8px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 2px 8px;
-    border-radius: 4px;
+    letter-spacing: 0.5px;
+    padding: 1px 5px;
+    border-radius: 3px;
     position: absolute;
-    bottom: -18px;
+    bottom: -14px;
+    white-space: nowrap;
 }
 
 .seat-action.fold {
@@ -259,32 +276,33 @@
 /* Dealer button */
 .dealer-btn {
     position: absolute;
-    bottom: -8px;
-    right: -8px;
-    width: 22px;
-    height: 22px;
+    bottom: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: linear-gradient(135deg, #fff, #ccc);
     color: #000;
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--accent-gold);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    border: 1.5px solid var(--accent-gold);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 /* Blind indicators */
 .blind-badge {
     position: absolute;
-    top: -6px;
-    right: -10px;
-    font-size: 8px;
+    top: -4px;
+    right: -6px;
+    font-size: 7px;
     font-weight: 700;
-    padding: 1px 4px;
-    border-radius: 4px;
+    padding: 0px 3px;
+    border-radius: 3px;
     text-transform: uppercase;
+    line-height: 1.4;
 }
 
 .blind-badge.sb {
@@ -299,12 +317,13 @@
 
 /* === CARDS === */
 .card {
-    width: 44px;
-    height: 62px;
-    border-radius: 5px;
+    width: 32px;
+    height: 46px;
+    border-radius: 4px;
     font-family: 'Inter', sans-serif;
     position: relative;
     transition: transform 0.2s ease;
+    flex-shrink: 0;
 }
 
 .card-front {
@@ -313,14 +332,14 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 3px 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    padding: 2px 3px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .card-back {
     background: linear-gradient(135deg, #1e3a5f 0%, #0d2137 50%, #1e3a5f 100%);
     border: 1px solid #2d5a8a;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -328,27 +347,27 @@
 .card-back::after {
     content: '';
     position: absolute;
-    inset: 3px;
+    inset: 2px;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
+    border-radius: 2px;
     background: repeating-linear-gradient(45deg, transparent, transparent 3px,
             rgba(255, 255, 255, 0.03) 3px, rgba(255, 255, 255, 0.03) 6px);
 }
 
 .card-rank {
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 800;
     line-height: 1;
 }
 
 .card-suit {
-    font-size: 18px;
+    font-size: 14px;
     line-height: 1;
     text-align: center;
 }
 
 .card-rank-bottom {
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 800;
     align-self: flex-end;
     transform: rotate(180deg);
@@ -367,39 +386,292 @@
     color: #1a1a2e;
 }
 
-/* Community cards are slightly larger */
+/* Community cards — slightly larger */
 #community-cards .card {
-    width: 54px;
-    height: 76px;
+    width: 38px;
+    height: 54px;
 }
 
 #community-cards .card .card-rank {
-    font-size: 15px;
+    font-size: 12px;
 }
 
 #community-cards .card .card-suit {
-    font-size: 22px;
+    font-size: 16px;
 }
 
 #community-cards .card .card-rank-bottom {
-    font-size: 15px;
+    font-size: 12px;
 }
 
-/* My cards (current player) are larger */
+/* My cards (current player) — emphasized */
 .my-cards .card {
-    width: 52px;
-    height: 72px;
+    width: 40px;
+    height: 58px;
     cursor: default;
 }
 
 .my-cards .card .card-rank {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .my-cards .card .card-suit {
-    font-size: 20px;
+    font-size: 17px;
 }
 
 .my-cards .card .card-rank-bottom {
-    font-size: 14px;
+    font-size: 12px;
+}
+
+/* ============================================
+   DESKTOP (viewport >= 768px)
+   ============================================ */
+@media (min-width: 768px) {
+    #table-container {
+        height: 60vh;
+        max-height: 540px;
+    }
+
+    #poker-table {
+        width: 75%;
+        height: 70%;
+        border-width: 4px;
+    }
+
+    .seat-inner {
+        gap: 3px;
+        min-width: 85px;
+    }
+
+    .seat-avatar {
+        width: 46px;
+        height: 46px;
+        font-size: 16px;
+    }
+
+    .seat-name {
+        font-size: 12px;
+        max-width: 90px;
+    }
+
+    .seat-chips {
+        font-size: 11px;
+        padding: 2px 8px;
+    }
+
+    .seat-bet-inline {
+        font-size: 11px;
+        padding: 2px 7px;
+    }
+
+    .seat-action {
+        font-size: 10px;
+        bottom: -18px;
+    }
+
+    .dealer-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 9px;
+        bottom: -8px;
+        right: -8px;
+    }
+
+    .blind-badge {
+        font-size: 8px;
+        padding: 1px 4px;
+    }
+
+    /* Cards: larger on desktop */
+    .card {
+        width: 42px;
+        height: 60px;
+    }
+
+    .card-rank {
+        font-size: 13px;
+    }
+
+    .card-suit {
+        font-size: 18px;
+    }
+
+    .card-rank-bottom {
+        font-size: 13px;
+    }
+
+    #community-cards .card {
+        width: 52px;
+        height: 74px;
+    }
+
+    #community-cards .card .card-rank {
+        font-size: 15px;
+    }
+
+    #community-cards .card .card-suit {
+        font-size: 22px;
+    }
+
+    #community-cards .card .card-rank-bottom {
+        font-size: 15px;
+    }
+
+    #community-cards {
+        gap: 6px;
+        min-height: 72px;
+    }
+
+    .my-cards .card {
+        width: 50px;
+        height: 70px;
+    }
+
+    .my-cards .card .card-rank {
+        font-size: 14px;
+    }
+
+    .my-cards .card .card-suit {
+        font-size: 20px;
+    }
+
+    .my-cards .card .card-rank-bottom {
+        font-size: 14px;
+    }
+
+    .seat-top-row {
+        gap: 6px;
+    }
+
+    #pot-display {
+        font-size: 13px;
+        padding: 5px 14px;
+    }
+
+    .pot-label {
+        font-size: 11px;
+    }
+}
+
+/* ============================================
+   SMALL PHONE (viewport < 420px)
+   ============================================ */
+@media (max-width: 420px) {
+    #table-container {
+        width: 98vw;
+        height: 55vh;
+    }
+
+    #poker-table {
+        width: 68%;
+        height: 55%;
+    }
+
+    .seat-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+        border-width: 1.5px;
+    }
+
+    .seat-inner {
+        min-width: 56px;
+        gap: 1px;
+    }
+
+    .seat-name {
+        font-size: 8px;
+        max-width: 56px;
+    }
+
+    .seat-chips {
+        font-size: 8px;
+        padding: 0px 4px;
+    }
+
+    .card {
+        width: 26px;
+        height: 38px;
+        border-radius: 3px;
+    }
+
+    .card-rank {
+        font-size: 8px;
+    }
+
+    .card-suit {
+        font-size: 11px;
+    }
+
+    .card-rank-bottom {
+        font-size: 8px;
+    }
+
+    .card-front {
+        padding: 1px 2px;
+    }
+
+    #community-cards .card {
+        width: 32px;
+        height: 46px;
+    }
+
+    #community-cards .card .card-rank {
+        font-size: 10px;
+    }
+
+    #community-cards .card .card-suit {
+        font-size: 14px;
+    }
+
+    #community-cards .card .card-rank-bottom {
+        font-size: 10px;
+    }
+
+    .my-cards .card {
+        width: 32px;
+        height: 46px;
+    }
+
+    .my-cards .card .card-rank {
+        font-size: 10px;
+    }
+
+    .my-cards .card .card-suit {
+        font-size: 14px;
+    }
+
+    .my-cards .card .card-rank-bottom {
+        font-size: 10px;
+    }
+
+    .seat-bet-inline {
+        font-size: 7px;
+        padding: 0px 3px;
+    }
+
+    .seat-action {
+        font-size: 7px;
+        bottom: -12px;
+    }
+
+    .dealer-btn {
+        width: 14px;
+        height: 14px;
+        font-size: 6px;
+    }
+
+    .blind-badge {
+        font-size: 6px;
+        padding: 0px 2px;
+    }
+
+    #pot-display {
+        font-size: 10px;
+        padding: 2px 8px;
+    }
+
+    .pot-label {
+        font-size: 9px;
+    }
 }

@@ -6,82 +6,90 @@ const GameUI = {
 
     // Seat positions (percentages) for 2-10 players around an ellipse
     // Current player is always at bottom center
+    // Positions are pushed further from table center to avoid overlap
     getSeatPositions(count) {
         const positions = {
             2: [
-                { x: 50, y: 95 },   // bottom (me)
-                { x: 50, y: 5 }     // top
+                { x: 50, y: 97 },   // bottom (me)
+                { x: 50, y: 3 }     // top
             ],
             3: [
-                { x: 50, y: 95 },
-                { x: 85, y: 20 },
-                { x: 15, y: 20 }
+                { x: 50, y: 97 },
+                { x: 88, y: 15 },
+                { x: 12, y: 15 }
             ],
             4: [
-                { x: 50, y: 95 },
-                { x: 90, y: 50 },
-                { x: 50, y: 5 },
-                { x: 10, y: 50 }
+                { x: 50, y: 97 },
+                { x: 93, y: 50 },
+                { x: 50, y: 3 },
+                { x: 7, y: 50 }
             ],
             5: [
-                { x: 50, y: 95 },
-                { x: 88, y: 68 },
-                { x: 80, y: 10 },
-                { x: 20, y: 10 },
-                { x: 12, y: 68 }
+                { x: 50, y: 97 },
+                { x: 93, y: 65 },
+                { x: 82, y: 5 },
+                { x: 18, y: 5 },
+                { x: 7, y: 65 }
             ],
             6: [
-                { x: 50, y: 95 },
-                { x: 88, y: 65 },
-                { x: 82, y: 10 },
-                { x: 50, y: 5 },
-                { x: 18, y: 10 },
-                { x: 12, y: 65 }
+                { x: 50, y: 97 },
+                { x: 93, y: 62 },
+                { x: 82, y: 5 },
+                { x: 50, y: 3 },
+                { x: 18, y: 5 },
+                { x: 7, y: 62 }
             ],
             7: [
-                { x: 50, y: 95 },
-                { x: 90, y: 68 },
-                { x: 85, y: 20 },
-                { x: 62, y: 5 },
-                { x: 38, y: 5 },
-                { x: 15, y: 20 },
-                { x: 10, y: 68 }
+                { x: 50, y: 97 },
+                { x: 95, y: 65 },
+                { x: 88, y: 15 },
+                { x: 64, y: 3 },
+                { x: 36, y: 3 },
+                { x: 12, y: 15 },
+                { x: 5, y: 65 }
             ],
             8: [
-                { x: 50, y: 95 },
-                { x: 88, y: 72 },
-                { x: 90, y: 35 },
-                { x: 72, y: 5 },
-                { x: 50, y: 2 },
-                { x: 28, y: 5 },
-                { x: 10, y: 35 },
-                { x: 12, y: 72 }
+                { x: 50, y: 97 },
+                { x: 93, y: 72 },
+                { x: 95, y: 32 },
+                { x: 74, y: 3 },
+                { x: 50, y: 1 },
+                { x: 26, y: 3 },
+                { x: 5, y: 32 },
+                { x: 7, y: 72 }
             ],
             9: [
-                { x: 50, y: 95 },
-                { x: 85, y: 78 },
-                { x: 92, y: 45 },
-                { x: 82, y: 12 },
-                { x: 60, y: 2 },
-                { x: 40, y: 2 },
-                { x: 18, y: 12 },
-                { x: 8, y: 45 },
-                { x: 15, y: 78 }
+                { x: 50, y: 97 },
+                { x: 90, y: 78 },
+                { x: 95, y: 42 },
+                { x: 84, y: 8 },
+                { x: 62, y: 1 },
+                { x: 38, y: 1 },
+                { x: 16, y: 8 },
+                { x: 5, y: 42 },
+                { x: 10, y: 78 }
             ],
             10: [
-                { x: 50, y: 95 },
-                { x: 80, y: 82 },
-                { x: 92, y: 55 },
-                { x: 90, y: 25 },
-                { x: 72, y: 5 },
-                { x: 50, y: 2 },
-                { x: 28, y: 5 },
-                { x: 10, y: 25 },
-                { x: 8, y: 55 },
-                { x: 20, y: 82 }
+                { x: 50, y: 97 },
+                { x: 85, y: 82 },
+                { x: 95, y: 52 },
+                { x: 93, y: 22 },
+                { x: 74, y: 3 },
+                { x: 50, y: 1 },
+                { x: 26, y: 3 },
+                { x: 7, y: 22 },
+                { x: 5, y: 52 },
+                { x: 15, y: 82 }
             ]
         };
         return positions[count] || positions[10];
+    },
+
+    // Determine z-index zone for a seat position
+    getSeatZone(pos) {
+        if (pos.y > 75) return 'seat-bottom';
+        if (pos.y < 25) return 'seat-top';
+        return 'seat-side';
     },
 
     // Bet chip positions (offset from seat, towards center of table)
@@ -159,6 +167,7 @@ const GameUI = {
         ordered.forEach((player, i) => {
             const pos = positions[i];
             const seat = this.createSeat(player, pos, state, myIdx >= 0 && i === 0);
+            seat.classList.add(this.getSeatZone(pos));
             container.appendChild(seat);
         });
     },
