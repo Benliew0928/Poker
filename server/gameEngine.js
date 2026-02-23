@@ -1,10 +1,11 @@
 const Deck = require('./deck');
 const { evaluateHand, compareHands } = require('./handEvaluator');
 
-const PHASES = ['WAITING', 'PRE_FLOP', 'FLOP', 'TURN', 'RIVER', 'SHOWDOWN'];
+const PHASES = ['WAITING', 'PRE_FLOP', 'FLOP', 'TURN', 'RIVER', 'SHOWDOWN', 'REBUY_WAIT'];
 const SB = 1;
 const BB = 2;
 const STARTING_CHIPS = 400;
+const REBUY_WAIT_TIME = 10000; // 10 seconds for rebuy window
 
 class GameEngine {
     constructor(onStateChange) {
@@ -29,6 +30,9 @@ class GameEngine {
         this.bustedPlayers = [];
         this.isDealing = false;
         this._phaseTimers = []; // Track all setTimeout IDs for cleanup
+        this.rebuyDeadline = null; // Timestamp when rebuy window ends
+        this.rebuyTimer = null;
+        this._pendingBroke = []; // Players waiting to rebuy
     }
 
     addPlayer(id, name) {
@@ -48,19 +52,37 @@ class GameEngine {
             id, name, chips: STARTING_CHIPS,
             holeCards: [], bet: 0, totalBet: 0,
             folded: false, allIn: false, hasActed: false,
-            seatIndex, lastAction: null, isLeaving: false
+            seatIndex, lastAction: null, isLeaving: false,
+            afkCount: 0
         });
         return 'added';
     }
 
     rebuy(playerId) {
+        // Check if player is in the rebuy wait window (still in players array with 0 chips)
+        if (this.phase === 'REBUY_WAIT') {
+            const brokePlayer = this.players.find(p => p.id === playerId && p.chips <= 0);
+            if (brokePlayer) {
+                brokePlayer.chips = STARTING_CHIPS;
+                console.log(`[REBUY] ${brokePlayer.name} rebuyed during wait window`);
+                // Check if all broke players have now responded
+                const stillBroke = this.players.filter(p => p.chips <= 0);
+                if (stillBroke.length === 0) {
+                    // Everyone responded, skip remaining wait time
+                    this._expireRebuyWindow();
+                }
+                return true;
+            }
+        }
+
+        // Standard rebuy from busted list
         const bustIdx = this.bustedPlayers.findIndex(p => p.id === playerId);
         if (bustIdx === -1) return false;
 
         const player = this.bustedPlayers[bustIdx];
         this.bustedPlayers.splice(bustIdx, 1);
 
-        if (this.phase !== 'WAITING') {
+        if (this.phase !== 'WAITING' && this.phase !== 'REBUY_WAIT') {
             this.pendingPlayers.push({ id: player.id, name: player.name });
         } else {
             const seatIndex = this._nextSeat();
@@ -68,7 +90,8 @@ class GameEngine {
                 id: player.id, name: player.name, chips: STARTING_CHIPS,
                 holeCards: [], bet: 0, totalBet: 0,
                 folded: false, allIn: false, hasActed: false,
-                seatIndex, lastAction: null, isLeaving: false
+                seatIndex, lastAction: null, isLeaving: false,
+                afkCount: 0
             });
         }
         return true;
@@ -117,14 +140,59 @@ class GameEngine {
         this._checkHandEnd();
     }
 
-    startHand() {
+    // Called between hands: checks for broke players and starts rebuy wait or next hand
+    _transitionToNextHand() {
         this.players = this.players.filter(p => !p.isLeaving);
-        // Move broke players to busted
+
+        // Remove AFK players (timed out on their action)
+        const afkPlayers = this.players.filter(p => p.afkCount >= 1);
+        for (const p of afkPlayers) {
+            console.log(`[AFK] ${p.name} removed (timed out)`);
+            p.isLeaving = true;
+        }
+        this.players = this.players.filter(p => !p.isLeaving);
+
+        // Check for broke players who need rebuy opportunity
         const broke = this.players.filter(p => p.chips <= 0);
-        for (const p of broke) {
+        if (broke.length > 0) {
+            // Enter REBUY_WAIT phase
+            this.phase = 'REBUY_WAIT';
+            this._pendingBroke = broke.map(p => ({ id: p.id, name: p.name }));
+            this.rebuyDeadline = Date.now() + REBUY_WAIT_TIME;
+            console.log(`[REBUY] Waiting ${REBUY_WAIT_TIME / 1000}s for ${broke.map(p => p.name).join(', ')} to rebuy`);
+            this.onStateChange();
+
+            // After 10s, expire the rebuy window
+            this.rebuyTimer = setTimeout(() => {
+                this._expireRebuyWindow();
+            }, REBUY_WAIT_TIME);
+            return;
+        }
+
+        // No broke players, go straight to next hand
+        this._startNextHand();
+    }
+
+    // Called when rebuy window expires OR manually when all broke players have responded
+    _expireRebuyWindow() {
+        if (this.rebuyTimer) { clearTimeout(this.rebuyTimer); this.rebuyTimer = null; }
+        this.rebuyDeadline = null;
+
+        // Move any remaining broke players to busted (spectator)
+        const stillBroke = this.players.filter(p => p.chips <= 0);
+        for (const p of stillBroke) {
+            console.log(`[REBUY] ${p.name} did not rebuy → spectator`);
             this.bustedPlayers.push({ id: p.id, name: p.name });
         }
         this.players = this.players.filter(p => p.chips > 0);
+        this._pendingBroke = [];
+
+        this._startNextHand();
+    }
+
+    // Actually start the next hand (after rebuy window or directly)
+    _startNextHand() {
+        this.players = this.players.filter(p => !p.isLeaving);
 
         // Promote pending players
         for (const pp of this.pendingPlayers) {
@@ -134,11 +202,16 @@ class GameEngine {
                     id: pp.id, name: pp.name, chips: STARTING_CHIPS,
                     holeCards: [], bet: 0, totalBet: 0,
                     folded: false, allIn: false, hasActed: false,
-                    seatIndex, lastAction: null, isLeaving: false
+                    seatIndex, lastAction: null, isLeaving: false,
+                    afkCount: 0
                 });
             }
         }
         this.pendingPlayers = [];
+        this.startHand();
+    }
+
+    startHand() {
 
         if (this.players.length < 2) { this.phase = 'WAITING'; return; }
 
@@ -182,11 +255,16 @@ class GameEngine {
     handleAction(playerId, type, amount = 0) {
         const idx = this.players.findIndex(p => p.id === playerId);
         if (idx === -1 || idx !== this.activePlayerIndex) return false;
-        if (this.phase === 'WAITING' || this.phase === 'SHOWDOWN') return false;
+        if (this.phase === 'WAITING' || this.phase === 'SHOWDOWN' || this.phase === 'REBUY_WAIT') return false;
 
         const player = this.players[idx];
         const actions = this.getAvailableActions(playerId);
         if (!actions.map(a => a.type).includes(type)) return false;
+
+        // If timer is still running, player acted manually — reset AFK counter
+        if (this.actionTimer) {
+            player.afkCount = 0;
+        }
 
         this._clearTimer();
 
@@ -319,7 +397,10 @@ class GameEngine {
             winners: this.winners,
             showdownHands: this.phase === 'SHOWDOWN' ? this.showdownHands : {},
             actionDeadline: this.actionDeadline,
-            canRebuy: this.bustedPlayers.some(p => p.id === playerId)
+            canRebuy: this.bustedPlayers.some(p => p.id === playerId) ||
+                (this.phase === 'REBUY_WAIT' && this.players.some(p => p.id === playerId && p.chips <= 0)),
+            rebuyDeadline: this.rebuyDeadline,
+            rebuyWaitingFor: this._pendingBroke.map(p => p.name)
         };
     }
 
@@ -486,9 +567,9 @@ class GameEngine {
             this._distributePots();
             this.onStateChange();
 
-            // Step 3: After showing results, start next hand
+            // Step 3: After showing results, transition to next hand (with rebuy wait)
             this._phaseTimers.push(setTimeout(() => {
-                this.startHand();
+                this._transitionToNextHand();
                 this.onStateChange();
             }, 5000));
         }, 2500));
@@ -579,7 +660,7 @@ class GameEngine {
         this.onStateChange();
 
         this._phaseTimers.push(setTimeout(() => {
-            this.startHand();
+            this._transitionToNextHand();
             this.onStateChange();
         }, 3000));
     }
@@ -594,6 +675,9 @@ class GameEngine {
         this.actionTimer = setTimeout(() => {
             const player = this.players[this.activePlayerIndex];
             if (!player) return;
+            // Mark as AFK — will be removed next hand
+            player.afkCount = (player.afkCount || 0) + 1;
+            console.log(`[AFK] ${player.name} timed out (afkCount: ${player.afkCount})`);
             const actions = this.getAvailableActions(player.id);
             const canCheck = actions.some(a => a.type === 'check');
             this.handleAction(player.id, canCheck ? 'check' : 'fold');
@@ -608,6 +692,8 @@ class GameEngine {
 
     _clearAllTimers() {
         this._clearTimer();
+        if (this.rebuyTimer) { clearTimeout(this.rebuyTimer); this.rebuyTimer = null; }
+        this.rebuyDeadline = null;
         for (const t of this._phaseTimers) { clearTimeout(t); }
         this._phaseTimers = [];
         this.isDealing = false;

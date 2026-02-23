@@ -448,6 +448,27 @@ const GameUI = {
 
     renderSpectator(state) {
         const banner = document.getElementById('spectator-banner');
+        if (state.phase === 'REBUY_WAIT' && !state.canRebuy) {
+            // Show waiting banner for non-busted players
+            banner.classList.remove('hidden');
+            const names = state.rebuyWaitingFor && state.rebuyWaitingFor.length > 0
+                ? state.rebuyWaitingFor.join(', ')
+                : 'players';
+            const remaining = state.rebuyDeadline ? Math.max(0, Math.ceil((state.rebuyDeadline - Date.now()) / 1000)) : 0;
+            banner.innerHTML = `<span>⏳ Waiting for ${names} to rebuy... (${remaining}s)</span>`;
+
+            // Update countdown
+            if (this._rebuyBannerInterval) clearInterval(this._rebuyBannerInterval);
+            this._rebuyBannerInterval = setInterval(() => {
+                const rem = state.rebuyDeadline ? Math.max(0, Math.ceil((state.rebuyDeadline - Date.now()) / 1000)) : 0;
+                banner.innerHTML = `<span>⏳ Waiting for ${names} to rebuy... (${rem}s)</span>`;
+                if (rem <= 0) clearInterval(this._rebuyBannerInterval);
+            }, 500);
+            return;
+        }
+
+        if (this._rebuyBannerInterval) { clearInterval(this._rebuyBannerInterval); this._rebuyBannerInterval = null; }
+
         if (state.isSpectator && !state.canRebuy) {
             banner.classList.remove('hidden');
             if (state.isPending) {
@@ -464,7 +485,29 @@ const GameUI = {
         const panel = document.getElementById('rebuy-panel');
         if (state.canRebuy) {
             panel.classList.remove('hidden');
+
+            // Show countdown during REBUY_WAIT phase
+            if (state.phase === 'REBUY_WAIT' && state.rebuyDeadline) {
+                const msgEl = panel.querySelector('.rebuy-message');
+                const remaining = Math.max(0, Math.ceil((state.rebuyDeadline - Date.now()) / 1000));
+                msgEl.textContent = `💸 You're out of chips! Rebuy? (${remaining}s)`;
+
+                if (this._rebuyCountdownInterval) clearInterval(this._rebuyCountdownInterval);
+                this._rebuyCountdownInterval = setInterval(() => {
+                    const rem = Math.max(0, Math.ceil((state.rebuyDeadline - Date.now()) / 1000));
+                    msgEl.textContent = `💸 You're out of chips! Rebuy? (${rem}s)`;
+                    if (rem <= 0) {
+                        clearInterval(this._rebuyCountdownInterval);
+                        msgEl.textContent = '💸 Time expired! Moving to spectator...';
+                    }
+                }, 500);
+            } else {
+                if (this._rebuyCountdownInterval) { clearInterval(this._rebuyCountdownInterval); this._rebuyCountdownInterval = null; }
+                const msgEl = panel.querySelector('.rebuy-message');
+                msgEl.textContent = "💸 You're out of chips!";
+            }
         } else {
+            if (this._rebuyCountdownInterval) { clearInterval(this._rebuyCountdownInterval); this._rebuyCountdownInterval = null; }
             panel.classList.add('hidden');
         }
     }
