@@ -71,9 +71,15 @@
       </div>
       <div id="action-buttons"></div>
       <div id="raise-controls" class="hidden">
-        <input type="range" id="raise-slider" min="0" max="100" value="0">
-        <div class="raise-info">
+        <div class="raise-slider-row">
+          <span id="raise-min-label">Min</span>
+          <input type="range" id="raise-slider" min="0" max="100" value="0">
+          <span id="raise-max-label">Max</span>
+        </div>
+        <div class="raise-amount-row">
+          <button id="raise-minus" class="raise-inc-btn">−</button>
           <input type="number" id="raise-amount" min="0">
+          <button id="raise-plus" class="raise-inc-btn">+</button>
           <button id="raise-confirm" class="btn-raise">Raise</button>
         </div>
         <div class="raise-presets">
@@ -81,6 +87,7 @@
           <button class="preset-btn" data-mult="0.5">½ Pot</button>
           <button class="preset-btn" data-mult="0.75">¾ Pot</button>
           <button class="preset-btn" data-mult="1">Pot</button>
+          <button class="preset-btn preset-bb" data-bb="3">3BB</button>
         </div>
       </div>
     </div>

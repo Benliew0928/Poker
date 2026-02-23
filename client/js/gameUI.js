@@ -328,9 +328,14 @@ const GameUI = {
         const slider = document.getElementById('raise-slider');
         const amountInput = document.getElementById('raise-amount');
         const confirmBtn = document.getElementById('raise-confirm');
+        const minusBtn = document.getElementById('raise-minus');
+        const plusBtn = document.getElementById('raise-plus');
+        const minLabel = document.getElementById('raise-min-label');
+        const maxLabel = document.getElementById('raise-max-label');
 
         controls.classList.remove('hidden');
 
+        const BB = 2; // Big blind
         slider.min = action.min;
         slider.max = action.max;
         slider.value = action.min;
@@ -338,10 +343,28 @@ const GameUI = {
         amountInput.max = action.max;
         amountInput.value = action.min;
 
+        // Show min/max labels with actual chip values
+        minLabel.textContent = CardRenderer.formatChips(action.min);
+        maxLabel.textContent = CardRenderer.formatChips(action.max);
+
+        function syncAmount(val) {
+            val = Math.min(Math.max(val, action.min), action.max);
+            slider.value = val;
+            amountInput.value = val;
+        }
+
         slider.oninput = () => { amountInput.value = slider.value; };
         amountInput.oninput = () => {
             const v = Math.min(Math.max(parseInt(amountInput.value) || action.min, action.min), action.max);
             slider.value = v;
+        };
+
+        // +/- buttons increment by 1 BB (2 chips)
+        minusBtn.onclick = () => {
+            syncAmount((parseInt(amountInput.value) || action.min) - BB);
+        };
+        plusBtn.onclick = () => {
+            syncAmount((parseInt(amountInput.value) || action.min) + BB);
         };
 
         confirmBtn.onclick = () => {
@@ -349,14 +372,22 @@ const GameUI = {
             controls.classList.add('hidden');
         };
 
-        // Presets
-        document.querySelectorAll('.preset-btn').forEach(btn => {
+        // Pot fraction presets
+        document.querySelectorAll('.preset-btn[data-mult]').forEach(btn => {
             btn.onclick = () => {
                 const mult = parseFloat(btn.dataset.mult);
                 const potSize = state.pot;
                 const val = Math.min(Math.max(Math.round(potSize * mult + state.currentBet), action.min), action.max);
-                slider.value = val;
-                amountInput.value = val;
+                syncAmount(val);
+            };
+        });
+
+        // BB preset
+        document.querySelectorAll('.preset-btn[data-bb]').forEach(btn => {
+            btn.onclick = () => {
+                const bbMult = parseInt(btn.dataset.bb);
+                const val = Math.min(Math.max(bbMult * BB + state.currentBet, action.min), action.max);
+                syncAmount(val);
             };
         });
     },
