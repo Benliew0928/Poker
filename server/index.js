@@ -7,17 +7,41 @@ const GameRoom = require('./gameRoom');
 const app = express();
 const server = http.createServer(app);
 
+// Socket.io with ping/pong tuned for Render's proxy
 const io = new Server(server, {
     cors: {
         origin: '*',
         methods: ['GET', 'POST']
-    }
+    },
+    // Keep connections alive through Render's proxy
+    pingInterval: 10000,   // Send ping every 10s (default 25s is too slow)
+    pingTimeout: 5000,     // Wait 5s for pong before considering disconnected
+    transports: ['websocket', 'polling'],
+    allowUpgrades: true
 });
 
 // Serve client files in development
 app.use(express.static(path.join(__dirname, '../client')));
 
+// Health check endpoint (keeps Render happy)
+app.get('/health', (req, res) => {
+    const mem = process.memoryUsage();
+    res.json({
+        status: 'ok',
+        uptime: Math.floor(process.uptime()),
+        memory: Math.round(mem.heapUsed / 1024 / 1024) + 'MB',
+        players: gameRoom.engine.players.length,
+        phase: gameRoom.engine.phase
+    });
+});
+
 const gameRoom = new GameRoom();
+
+// Log memory usage every 5 minutes
+setInterval(() => {
+    const mem = process.memoryUsage();
+    console.log(`[MEM] Heap: ${Math.round(mem.heapUsed / 1024 / 1024)}MB / ${Math.round(mem.heapTotal / 1024 / 1024)}MB | RSS: ${Math.round(mem.rss / 1024 / 1024)}MB | Players: ${gameRoom.engine.players.length} | Hand: ${gameRoom.engine.handNumber}`);
+}, 5 * 60 * 1000);
 
 io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id}`);
@@ -40,29 +64,31 @@ io.on('connection', (socket) => {
     });
 
     socket.on('action', ({ type, amount }) => {
-        gameRoom.handleAction(socket.id, type, amount);
+        try {
+            gameRoom.handleAction(socket.id, type, amount);
+        } catch (err) {
+            console.error('Error handling action:', err);
+        }
     });
 
     socket.on('rebuy', () => {
-        gameRoom.handleRebuy(socket.id);
+        try {
+            gameRoom.handleRebuy(socket.id);
+        } catch (err) {
+            console.error('Error handling rebuy:', err);
+        }
     });
 
     socket.on('chat', (data) => {
         const message = data && data.message;
         if (!message || message.trim().length === 0) return;
-        // Try multiple ways to find the player name
         let name = gameRoom.getPlayerName(socket.id);
         if (!name) {
-            // Fallback: reverse lookup from playerNames map
             for (const [pName, pId] of gameRoom.playerNames) {
                 if (pId === socket.id) { name = pName; break; }
             }
         }
-        if (!name) {
-            console.log(`Chat from unknown socket ${socket.id}`);
-            return;
-        }
-        console.log(`Chat: ${name}: ${message.trim()}`);
+        if (!name) return;
         io.emit('chatMessage', {
             name,
             message: message.trim().substring(0, 200),
@@ -83,6 +109,20 @@ io.on('connection', (socket) => {
             });
         }
     });
+
+    socket.on('error', (err) => {
+        console.error(`Socket error for ${socket.id}:`, err);
+    });
+});
+
+// --- Global error handlers (prevent silent crashes) ---
+process.on('uncaughtException', (err) => {
+    console.error('[FATAL] Uncaught Exception:', err);
+    // Don't exit — keep the server alive
+});
+
+process.on('unhandledRejection', (reason) => {
+    console.error('[FATAL] Unhandled Rejection:', reason);
 });
 
 const PORT = process.env.PORT || 3001;

@@ -28,6 +28,7 @@ class GameEngine {
         this.pendingPlayers = [];
         this.bustedPlayers = [];
         this.isDealing = false;
+        this._phaseTimers = []; // Track all setTimeout IDs for cleanup
     }
 
     addPlayer(id, name) {
@@ -148,6 +149,7 @@ class GameEngine {
         this.showdownHands = {};
         this.currentBet = 0;
         this.minRaise = BB;
+        this._clearAllTimers(); // Clear any lingering phase timers
 
         for (const p of this.players) {
             Object.assign(p, {
@@ -456,12 +458,12 @@ class GameEngine {
             i++;
             this.onStateChange();
             if (i < cards.length) {
-                setTimeout(dealNext, 1000);
+                this._phaseTimers.push(setTimeout(dealNext, 1000));
             } else {
-                setTimeout(callback, 1000);
+                this._phaseTimers.push(setTimeout(callback, 1000));
             }
         };
-        setTimeout(dealNext, 600);
+        this._phaseTimers.push(setTimeout(dealNext, 600));
     }
 
     _showdown() {
@@ -480,16 +482,16 @@ class GameEngine {
         this.onStateChange();
 
         // Step 2: After delay, announce winners
-        setTimeout(() => {
+        this._phaseTimers.push(setTimeout(() => {
             this._distributePots();
             this.onStateChange();
 
             // Step 3: After showing results, start next hand
-            setTimeout(() => {
+            this._phaseTimers.push(setTimeout(() => {
                 this.startHand();
                 this.onStateChange();
-            }, 5000);
-        }, 2500);
+            }, 5000));
+        }, 2500));
     }
 
     _distributePots() {
@@ -576,10 +578,10 @@ class GameEngine {
         this.phase = 'SHOWDOWN';
         this.onStateChange();
 
-        setTimeout(() => {
+        this._phaseTimers.push(setTimeout(() => {
             this.startHand();
             this.onStateChange();
-        }, 3000);
+        }, 3000));
     }
 
     _totalPot() {
@@ -602,6 +604,13 @@ class GameEngine {
     _clearTimer() {
         if (this.actionTimer) { clearTimeout(this.actionTimer); this.actionTimer = null; }
         this.actionDeadline = null;
+    }
+
+    _clearAllTimers() {
+        this._clearTimer();
+        for (const t of this._phaseTimers) { clearTimeout(t); }
+        this._phaseTimers = [];
+        this.isDealing = false;
     }
 
     _checkHandEnd() {
