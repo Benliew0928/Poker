@@ -108,12 +108,17 @@
       <div id="winner-message"></div>
     </div>
 
+    <!-- Chat FAB Button -->
+    <button id="chat-fab" title="Open Chat">
+      💬
+      <span id="chat-badge" class="hidden">0</span>
+    </button>
+
     <!-- Chat Panel -->
-    <div id="chat-panel" class="chat-collapsed">
+    <div id="chat-panel" class="chat-hidden">
       <div id="chat-header">
         <span>💬 Chat</span>
-        <span id="chat-badge" class="hidden">0</span>
-        <button id="chat-toggle">▲</button>
+        <button id="chat-close" title="Close Chat">✕</button>
       </div>
       <div id="chat-body">
         <div id="chat-messages"></div>

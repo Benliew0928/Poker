@@ -8,8 +8,8 @@
 
     // Chat elements
     const chatPanel = document.getElementById('chat-panel');
-    const chatHeader = document.getElementById('chat-header');
-    const chatToggle = document.getElementById('chat-toggle');
+    const chatFab = document.getElementById('chat-fab');
+    const chatClose = document.getElementById('chat-close');
     const chatMessages = document.getElementById('chat-messages');
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
@@ -58,18 +58,24 @@
     }
 
     // ---- Chat ----
-    chatHeader.addEventListener('click', () => {
-        chatOpen = !chatOpen;
-        if (chatOpen) {
-            chatPanel.classList.remove('chat-collapsed');
-            unreadCount = 0;
-            chatBadge.classList.add('hidden');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            chatInput.focus();
-        } else {
-            chatPanel.classList.add('chat-collapsed');
-        }
-    });
+    function openChat() {
+        chatOpen = true;
+        chatPanel.classList.remove('chat-hidden');
+        chatFab.style.display = 'none';
+        unreadCount = 0;
+        chatBadge.classList.add('hidden');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        chatInput.focus();
+    }
+
+    function closeChat() {
+        chatOpen = false;
+        chatPanel.classList.add('chat-hidden');
+        chatFab.style.display = 'flex';
+    }
+
+    chatFab.addEventListener('click', openChat);
+    chatClose.addEventListener('click', closeChat);
 
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
